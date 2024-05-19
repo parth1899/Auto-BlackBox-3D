@@ -13,9 +13,7 @@ $(document).ready(function () {
                 if (response.error) {
                     alert(response.error);
                 } else {
-                    data = response;
-                    console.log(data);
-                    window.location.href = '/models'; // Redirect to the models page
+                    // window.location.href = '/models'; // Redirect to the models page
                 }
             },
             error: function () {

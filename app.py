@@ -16,6 +16,14 @@ def upload_form():
 def view_model():
     return render_template('model.html')
 
+@app.route('/acceleration')
+def acceleration_graph():
+    return render_template('acceleration.html')
+
+@app.route('/gyro')
+def gyro_graph():
+    return render_template('gyro.html')
+
 @app.route('/upload', methods=['POST'])
 def upload_file():
     global stored_data
@@ -29,7 +37,6 @@ def upload_file():
 
     if file and file.filename.endswith('.csv'):
         df = pd.read_csv(file)
-        print(df)
         required_columns = {'Timestamp', 'Acceleration_X', 'Acceleration_Y', 'Acceleration_Z', 'Rotation_X', 'Rotation_Y', 'Rotation_Z'}
         if required_columns.issubset(df.columns):
             data = {
@@ -52,9 +59,26 @@ def upload_file():
 @app.route('/data', methods=['GET'])
 def get_data():
     global stored_data
-    print(stored_data)
     if stored_data:
         return jsonify(stored_data)
+    else:
+        return jsonify({'error': 'No data available'})
+
+@app.route('/gyro_data', methods=['GET'])
+def get_gyro():
+    global stored_data
+    if stored_data:
+        xyz_data = {'Timestamp':stored_data['Timestamp'], 'roll': stored_data['roll'], 'pitch': stored_data['pitch'], 'yaw': stored_data['yaw']}
+        return jsonify(xyz_data)
+    else:
+        return jsonify({'error': 'No data available'})
+    
+@app.route('/xyz_data', methods=['GET'])
+def get_xyz_data():
+    global stored_data
+    if stored_data:
+        gyro_data = {'Timestamp':stored_data['Timestamp'], 'x': stored_data['x'], 'y': stored_data['y'], 'z': stored_data['z']}
+        return jsonify(gyro_data)
     else:
         return jsonify({'error': 'No data available'})
 

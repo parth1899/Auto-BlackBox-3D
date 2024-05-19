@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='CSS/main.css') }}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     {% block head %}{% endblock %}
 </head>
 <body>
@@ -13,11 +14,11 @@
             <li><a href="/uploadform" id="uploadCSV">Upload CSV File</a></li>
             <li><a href="/models" id="view3DModel">View 3D Model</a></li>
             <li>
-                <a href="#" id="analyzeGraphs">Analyze Using Graphs</a>
+                <a id="analyzeGraphs">Analyze Using Graphs</a>
                 <ul class="dropdown">
-                    <li><a href="#" class="graphOption">Graph 1</a></li>
-                    <li><a href="#" class="graphOption">Graph 2</a></li>
-                    <li><a href="#" class="graphOption">Graph 3</a></li>
+                    <li><a href="/acceleration" class="graphOption">Acceleration</a></li>
+                    <li><a href="/gyro" class="graphOption">Gyroscope</a></li>
+                    <li><a href="/temp" class="graphOption">Temperature</a></li>
                 </ul>
             </li>
         </ul>
