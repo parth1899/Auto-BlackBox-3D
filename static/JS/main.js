@@ -4,16 +4,11 @@ $(document).ready(function () {
     let index = 0;
     let data, car, scene, camera, renderer, controls, axesHelper;
 
-    $('#upload-form').submit(function (event) {
-        event.preventDefault();
-        var formData = new FormData(this);
-
+    function fetchData() {
         $.ajax({
-            url: '/upload',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
+            url: '/data',
+            type: 'GET',
+            dataType: 'json',
             success: function (response) {
                 if (response.error) {
                     alert(response.error);
@@ -22,13 +17,17 @@ $(document).ready(function () {
                     initializeScene();
                     loadCarModel();
                     enableButtons();
+                    startAnimation();
                 }
             },
             error: function () {
-                alert('An error occurred while uploading the file.');
+                alert('An error occurred while fetching data from the server.');
             }
         });
-    });
+    }
+
+    fetchData();
+
 
     function initializeScene() {
         $('#container').empty();
@@ -51,7 +50,7 @@ $(document).ready(function () {
 
         // Add background wireframe box
         var geometry = new THREE.BoxGeometry(100, 100, 100); // Size adjusted to cover a larger area
-        var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true }); // Wireframe material with color
+        var material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true }); // Wireframe material with color
         var mesh = new THREE.Mesh(geometry, material);
         scene.add(mesh);
 
@@ -103,7 +102,7 @@ $(document).ready(function () {
         if (isAnimating) {
             setTimeout(() => {
                 animationId = requestAnimationFrame(animate);
-            }, 200); // Slowing down the animation speed
+            }, 1); // Slowing down the animation speed
         }
     }
 

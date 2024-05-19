@@ -1,19 +1,9 @@
 {% extends 'base.html' %}
 
 {% block head %}
-
+<script src="{{ url_for('static', filename='JS/main.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='CSS/main.css') }}">
 {% endblock %}
 
 {% block body %}
-<h1>Upload CSV for 6-DoF Animation</h1>
-<form id="upload-form" action="/upload" method="post" enctype="multipart/form-data">
-    <input type="file" name="file" accept=".csv" required>
-    <button type="submit">Upload</button>
-</form>
-<div id="controls">
-    <button id="start-btn" disabled>Start</button>
-    <button id="stop-btn" disabled>Stop</button>
-    <button id="restart-btn" disabled>Restart</button>
-</div>
-<div id="container"></div>
 {% endblock %}
