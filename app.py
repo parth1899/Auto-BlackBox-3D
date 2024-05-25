@@ -1,9 +1,14 @@
 from flask import Flask, render_template, request, jsonify
+import numpy as np
 import pandas as pd
+from sklearn.discriminant_analysis import StandardScaler
+import tensorflow as tf
+from sklearn.decomposition import PCA
 
 app = Flask(__name__)
 
 stored_data = None
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -23,6 +28,14 @@ def acceleration_graph():
 @app.route('/gyro')
 def gyro_graph():
     return render_template('gyro.html')
+
+@app.route('/anomalies_page')
+def anomalies_page():
+    return render_template('anomalies.html')
+
+@app.route('/anomalies_graph')
+def graph():
+    return render_template('anomalies_graph.html')
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -49,6 +62,7 @@ def upload_file():
                 'yaw': df['Rotation_Z'].tolist(),
             }
             stored_data = data
+            # print(stored_data)
             return jsonify({'message': 'File uploaded successfully'})
         else:
             missing_columns = required_columns - set(df.columns)
@@ -81,6 +95,61 @@ def get_xyz_data():
         return jsonify(gyro_data)
     else:
         return jsonify({'error': 'No data available'})
+
+model = tf.keras.models.load_model('autoencoder_model.keras')
+
+@app.route('/anomalies_data', methods=['GET'])
+def detect_anomalies():
+    global stored_data
+
+    stored_data_df = pd.DataFrame(stored_data)
+
+    features = stored_data_df.drop('Timestamp', axis=1)
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(features)
+
+    reconstructed = model.predict(X_scaled)
+    mse = np.mean(np.power(X_scaled - reconstructed, 2), axis=1)
+
+    threshold = np.percentile(mse, 99)
+
+    anomalies = mse > threshold
+    anomaly_indices = stored_data_df.index[anomalies].tolist()
+
+    anomaly_timestamps = stored_data_df.loc[anomaly_indices, 'Timestamp'].tolist()
+
+    anomaly_data = [{'index': idx, 'timestamp': timestamp} for idx, timestamp in zip(anomaly_indices, anomaly_timestamps)]
+    
+    return jsonify(anomaly_data)
+
+@app.route('/pca_data', methods=['GET'])
+def get_pca_data():
+    global stored_data
+
+    stored_data_df = pd.DataFrame(stored_data)
+
+    features = stored_data_df.drop('Timestamp', axis=1)
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(features)
+
+    reconstructed = model.predict(X_scaled)
+    mse = np.mean(np.power(X_scaled - reconstructed, 2), axis=1)
+
+    threshold = np.percentile(mse, 99)
+
+    anomalies = mse > threshold
+    
+    # Perform PCA
+    pca = PCA(n_components=2)  # You can choose the number of components as per your requirement
+    pca_components = pca.fit_transform(X_scaled)
+
+    # Convert anomalies to a list before JSON serialization
+    anomalies_list = anomalies.tolist()
+
+    pca_data = [{'component_1': component[0], 'component_2': component[1], 'anomaly': anomaly} 
+                for component, anomaly in zip(pca_components, anomalies_list)]
+
+    return jsonify(pca_data)
 
 if __name__ == '__main__':
     app.run(debug=True)

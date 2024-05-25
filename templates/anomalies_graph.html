@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<!-- Add any additional CSS or JS specific to this page if needed -->
+<script src="{{ url_for('static', filename='JS/ano_graph.js') }}"></script>
+{% endblock %}
+
+{% block body %}
+<div id="chartPlaceholder"></div>
+{% endblock %}

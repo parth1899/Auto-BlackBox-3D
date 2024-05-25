@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+    }
+    h1 {
+        text-align: center;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    th, td {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+</style>
+<script src="{{ url_for('static', filename='JS/anomalies.js') }}"></script>
+{% endblock %}
+
+{% block body %}
+<h1>Anomaly Detection Results</h1>
+    <table id="anomalyTable">
+        <thead>
+            <tr>
+                <th>Sr. No</th>
+                <th>Index</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Anomaly data will be inserted here by jQuery -->
+        </tbody>
+    </table>
+{% endblock %}
