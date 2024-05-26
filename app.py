@@ -7,6 +7,7 @@ from sklearn.decomposition import PCA
 
 app = Flask(__name__)
 
+current_location = {"latitude": 0.0, "longitude": 0.0}
 stored_data = None
 
 @app.route('/')
@@ -36,6 +37,37 @@ def anomalies_page():
 @app.route('/anomalies_graph')
 def graph():
     return render_template('anomalies_graph.html')
+
+@app.route('/gps')
+def gps_pos():
+    return render_template('gps.html', location=current_location)
+
+# @app.route('/live-coordinates')
+# def live_coordinates():
+#     # Simulate live coordinates for demonstration
+#     lat = 18.5434664
+#     lng = 73.7831388
+#     return jsonify(lat=lat, lng=lng)
+
+@app.route('/location', methods=['POST'])
+def update_location():
+    global current_location
+    try:
+        data = request.get_json()
+        if data and 'latitude' in data and 'longitude' in data:
+            current_location['latitude'] = float(data['latitude'])
+            current_location['longitude'] = float(data['longitude'])
+            return jsonify(current_location), 200
+        else:
+            return jsonify({"error": "Invalid data"}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+@app.route('/location-data', methods=['GET'])
+def get_location():
+    return jsonify(current_location), 200
+
+
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -152,4 +184,4 @@ def get_pca_data():
     return jsonify(pca_data)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
