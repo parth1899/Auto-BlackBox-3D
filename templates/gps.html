@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<style>
+    #map {
+        height: 600px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<h1>Current Location</h1>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map
+        var map = L.map('map').setView([0, 0], 2);
+
+        // Set up the OpenStreetMap layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19
+        }).addTo(map);
+
+        // Marker for current location
+        var marker = L.marker([0, 0]).addTo(map);
+
+        // Function to update the map with new location
+        function updateMap(latitude, longitude) {
+            var latLng = [latitude, longitude];
+            map.setView(latLng, 13); // Set view to new location
+            marker.setLatLng(latLng); // Update marker position
+        }
+
+        // Fetch the current location from the Flask endpoint
+        async function fetchLocation() {
+            const response = await fetch('/location-data');
+            const data = await response.json();
+            updateMap(data.latitude, data.longitude);
+        }
+
+        // Fetch location data initially
+        fetchLocation();
+
+        // Set an interval to periodically fetch the latest location
+        setInterval(fetchLocation, 5000); // Fetch every 5 seconds
+    </script>
+{% endblock %}
