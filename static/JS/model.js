@@ -3,6 +3,7 @@ $(document).ready(function () {
     let isAnimating = false;
     let index = 0;
     let data, car, scene, camera, renderer, controls, axesHelper;
+    let anomalies = [];
 
     function fetchData() {
         $.ajax({
@@ -13,8 +14,8 @@ $(document).ready(function () {
                 if (response.error) {
                     alert(response.error);
                 } else {
-                    data = response;
-                    console.log(data);
+                    data = response.data;
+                    anomalies = response.anomalies || [];
                     initializeScene();
                     loadCarModel();
                     enableButtons();
@@ -28,7 +29,6 @@ $(document).ready(function () {
     }
 
     fetchData();
-
 
     function initializeScene() {
         $('#container').empty();
@@ -45,13 +45,11 @@ $(document).ready(function () {
         light.position.set(5, 5, 5).normalize();
         scene.add(light);
 
-        // Add grid helper
-        var gridHelper = new THREE.GridHelper(100, 100); // Size and divisions adjusted to cover a larger area
+        var gridHelper = new THREE.GridHelper(100, 100);
         scene.add(gridHelper);
 
-        // Add background wireframe box
-        var geometry = new THREE.BoxGeometry(100, 100, 100); // Size adjusted to cover a larger area
-        var material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true }); // Wireframe material with color
+        var geometry = new THREE.BoxGeometry(100, 100, 100);
+        var material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
         var mesh = new THREE.Mesh(geometry, material);
         scene.add(mesh);
 
@@ -69,10 +67,9 @@ $(document).ready(function () {
             objLoader.setMaterials(materials);
             objLoader.load('/static/models/NISSAN-GTR.obj', function (object) {
                 car = object;
-                car.scale.set(0.01, 0.01, 0.01); // Scale the model to fit the scene if necessary
+                car.scale.set(0.01, 0.01, 0.01);
                 scene.add(car);
 
-                // Add axes helper to the car model
                 axesHelper = new THREE.AxesHelper(2);
                 car.add(axesHelper);
             });
@@ -95,28 +92,31 @@ $(document).ready(function () {
 
             car.rotation.set(pitch, yaw, roll);
 
+            // Check for anomalies
+            let currentTimestamp = data.Timestamp[index];
+            let anomaly = anomalies.find(a => a.timestamp === currentTimestamp);
+            if (anomaly) {
+                alert(`Anomaly detected at timestamp: ${currentTimestamp}`);
+            }
+
             index++;
         }
+
         controls.update();
         renderer.render(scene, camera);
 
-        if (isAnimating) {
-            setTimeout(() => {
-                animationId = requestAnimationFrame(animate);
-            }, 1); // Slowing down the animation speed
-        }
+        animationId = requestAnimationFrame(animate);
     }
 
     function startAnimation() {
         if (!isAnimating) {
             isAnimating = true;
-            animate();
         }
+        animate();
     }
 
     function stopAnimation() {
         isAnimating = false;
-        cancelAnimationFrame(animationId);
     }
 
     function restartAnimation() {

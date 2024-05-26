@@ -5,16 +5,16 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/MTLLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 <script src="{{ url_for('static', filename='JS/model.js') }}"></script>
 {% endblock %}
 
 {% block body %}
-<div id="controls">
-    <button id="start-btn" disabled>Start</button>
-    <button id="stop-btn" disabled>Stop</button>
-    <button id="restart-btn" disabled>Restart</button>
-</div>
 <div id="container"></div>
+<button id="start-btn" disabled>Start</button>
+<button id="stop-btn" disabled>Stop</button>
+<button id="restart-btn" disabled>Restart</button>
 
 <script>
 // Your JavaScript for loading and animating the 3D model

@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import numpy as np
 import pandas as pd
-from sklearn.discriminant_analysis import StandardScaler
+from sklearn.preprocessing import StandardScaler
 import tensorflow as tf
 from sklearn.decomposition import PCA
 
@@ -60,8 +60,6 @@ def update_location():
 def get_location():
     return jsonify(current_location), 200
 
-
-
 @app.route('/upload', methods=['POST'])
 def upload_file():
     global stored_data
@@ -87,7 +85,6 @@ def upload_file():
                 'yaw': df['Rotation_Z'].tolist(),
             }
             stored_data = data
-            # print(stored_data)
             return jsonify({'message': 'File uploaded successfully'})
         else:
             missing_columns = required_columns - set(df.columns)
@@ -99,7 +96,8 @@ def upload_file():
 def get_data():
     global stored_data
     if stored_data:
-        return jsonify(stored_data)
+        anomaly_data = detect_anomalies_internal()
+        return jsonify({'data': stored_data, 'anomalies': anomaly_data})
     else:
         return jsonify({'error': 'No data available'})
 
@@ -107,24 +105,23 @@ def get_data():
 def get_gyro():
     global stored_data
     if stored_data:
-        xyz_data = {'Timestamp':stored_data['Timestamp'], 'roll': stored_data['roll'], 'pitch': stored_data['pitch'], 'yaw': stored_data['yaw']}
-        return jsonify(xyz_data)
+        gyro_data = {'Timestamp': stored_data['Timestamp'], 'roll': stored_data['roll'], 'pitch': stored_data['pitch'], 'yaw': stored_data['yaw']}
+        return jsonify(gyro_data)
     else:
         return jsonify({'error': 'No data available'})
-    
+
 @app.route('/xyz_data', methods=['GET'])
 def get_xyz_data():
     global stored_data
     if stored_data:
-        gyro_data = {'Timestamp':stored_data['Timestamp'], 'x': stored_data['x'], 'y': stored_data['y'], 'z': stored_data['z']}
-        return jsonify(gyro_data)
+        xyz_data = {'Timestamp': stored_data['Timestamp'], 'x': stored_data['x'], 'y': stored_data['y'], 'z': stored_data['z']}
+        return jsonify(xyz_data)
     else:
         return jsonify({'error': 'No data available'})
 
 model = tf.keras.models.load_model('autoencoder_model.keras')
 
-@app.route('/anomalies_data', methods=['GET'])
-def detect_anomalies():
+def detect_anomalies_internal():
     global stored_data
 
     stored_data_df = pd.DataFrame(stored_data)
@@ -145,6 +142,11 @@ def detect_anomalies():
 
     anomaly_data = [{'index': idx, 'timestamp': timestamp} for idx, timestamp in zip(anomaly_indices, anomaly_timestamps)]
     
+    return anomaly_data
+
+@app.route('/anomalies_data', methods=['GET'])
+def detect_anomalies():
+    anomaly_data = detect_anomalies_internal()
     return jsonify(anomaly_data)
 
 @app.route('/pca_data', methods=['GET'])
