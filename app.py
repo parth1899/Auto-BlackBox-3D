@@ -42,13 +42,6 @@ def graph():
 def gps_pos():
     return render_template('gps.html', location=current_location)
 
-# @app.route('/live-coordinates')
-# def live_coordinates():
-#     # Simulate live coordinates for demonstration
-#     lat = 18.5434664
-#     lng = 73.7831388
-#     return jsonify(lat=lat, lng=lng)
-
 @app.route('/location', methods=['POST'])
 def update_location():
     global current_location

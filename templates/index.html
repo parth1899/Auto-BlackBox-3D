@@ -1,7 +1,59 @@
 {% extends 'base.html' %}
 
 {% block head %}
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background-image: url('/static/Assets/ev.jpg'); /* Set the path to your background image */
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        overflow: hidden;        
+    }
+
+    .welcome-container {
+        height: 70vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 3em;
+        margin-bottom: 20px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        background-color: #555;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+    }
+
+    .btn:hover {
+        background-color: #333;
+    }
+
+    .white-container {
+        height: 100vh;
+        background-color: rgba(255, 255, 255, 0.645); /* Add a semi-transparent white background for better readability */
+    }
+</style>
 {% endblock %}
 
 {% block body %}
+<div class="white-container">
+    <div class="welcome-container">
+        <h1>Auto-Black-Box 3D</h1>
+        <p>Welcome to the future of automotive safety and analysis.</p>
+        <a href="/uploadform" class="btn">Get Started</a>
+    </div>
+</div>
+
 {% endblock %}
+

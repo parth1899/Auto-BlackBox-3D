@@ -1,14 +1,16 @@
 {% extends 'base.html' %}
 
 {% block head %}
-<!-- Add any additional CSS or JS specific to this page if needed -->
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='CSS/form.css') }}">
 <script src="{{ url_for('static', filename='JS/form.js') }}"></script>
 {% endblock %}
 
 {% block body %}
-<h1>Upload CSV for 6-DoF Animation</h1>
-<form id="upload-form" action="/upload" method="post" enctype="multipart/form-data">
-    <input type="file" name="file" accept=".csv" required>
-    <button type="submit">Upload</button>
-</form>
+<div class="container">
+    <h1></h1>
+    <form id="upload-form" action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".csv" required>
+        <button type="submit">Upload</button>
+    </form>
+</div>
 {% endblock %}

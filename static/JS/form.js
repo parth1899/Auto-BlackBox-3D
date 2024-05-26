@@ -14,6 +14,7 @@ $(document).ready(function () {
                     alert(response.error);
                 } else {
                     // window.location.href = '/models'; // Redirect to the models page
+                    alert("Uploaded")
                 }
             },
             error: function () {
@@ -22,3 +23,4 @@ $(document).ready(function () {
         });
     });
 });
+
