@@ -4,6 +4,7 @@ $(document).ready(function () {
     let index = 0;
     let data, car, scene, camera, renderer, controls, axesHelper;
     let anomalies = [];
+    let alertTextMeshes = [];
 
     function fetchData() {
         $.ajax({
@@ -48,6 +49,15 @@ $(document).ready(function () {
         var gridHelper = new THREE.GridHelper(100, 100);
         scene.add(gridHelper);
 
+        // Create and add terrain
+        // var terrainGeometry = new THREE.PlaneGeometry(200, 200, 256, 256);
+        // var terrainMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
+
+        // var terrainMesh = new THREE.Mesh(terrainGeometry, terrainMaterial);
+        // terrainMesh.rotation.x = -Math.PI / 2;
+        // scene.add(terrainMesh);
+
+        // Wireframe cube for reference
         var geometry = new THREE.BoxGeometry(100, 100, 100);
         var material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
         var mesh = new THREE.Mesh(geometry, material);
@@ -67,7 +77,11 @@ $(document).ready(function () {
             objLoader.setMaterials(materials);
             objLoader.load('/static/models/NISSAN-GTR.obj', function (object) {
                 car = object;
-                car.scale.set(0.01, 0.01, 0.01);
+                car.scale.set(0.2, 0.2, 0.2);
+
+                // Center the car on the terrain
+                car.position.set(0, 0, 0); // Set initial y position
+
                 scene.add(car);
 
                 axesHelper = new THREE.AxesHelper(2);
@@ -82,9 +96,37 @@ $(document).ready(function () {
         renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
+    function createAlertText(message) {
+        // Remove existing alert texts if present
+        alertTextMeshes.forEach(mesh => scene.remove(mesh));
+        alertTextMeshes = [];
+
+        var loader = new THREE.FontLoader();
+        loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+            var geometry = new THREE.TextGeometry(message, {
+                font: font,
+                size: 1,
+                height: 0.1,
+                curveSegments: 12,
+            });
+
+            var material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            var newAlertTextMesh = new THREE.Mesh(geometry, material);
+
+            newAlertTextMesh.position.set(0, 10, 0); // Move the alert text up
+            scene.add(newAlertTextMesh);
+            alertTextMeshes.push(newAlertTextMesh);
+
+            setTimeout(() => {
+                scene.remove(newAlertTextMesh);
+                alertTextMeshes = alertTextMeshes.filter(mesh => mesh !== newAlertTextMesh);
+            }, 2000); // Display alert for 2 seconds
+        });
+    }
+
     function animate() {
         if (isAnimating && index < data.Timestamp.length && car) {
-            car.position.set(data.x[index], data.y[index], data.z[index]);
+            car.position.set(data.x[index], 0, data.z[index]);
 
             var roll = data.roll[index] * Math.PI / 180;
             var pitch = data.pitch[index] * Math.PI / 180;
@@ -92,11 +134,10 @@ $(document).ready(function () {
 
             car.rotation.set(pitch, yaw, roll);
 
-            // Check for anomalies
             let currentTimestamp = data.Timestamp[index];
             let anomaly = anomalies.find(a => a.timestamp === currentTimestamp);
             if (anomaly) {
-                alert(`Anomaly detected at timestamp: ${currentTimestamp}`);
+                createAlertText(`Anomaly detected at timestamp: ${currentTimestamp}`);
             }
 
             index++;
@@ -105,18 +146,21 @@ $(document).ready(function () {
         controls.update();
         renderer.render(scene, camera);
 
-        animationId = requestAnimationFrame(animate);
+        if (isAnimating) {
+            animationId = requestAnimationFrame(animate);
+        }
     }
 
     function startAnimation() {
         if (!isAnimating) {
             isAnimating = true;
+            animate();
         }
-        animate();
     }
 
     function stopAnimation() {
         isAnimating = false;
+        cancelAnimationFrame(animationId);
     }
 
     function restartAnimation() {
