@@ -1,6 +1,6 @@
 # Auto-BlackBox-3D
 
-# Employing Black Box Mechanism for Investigation and Analysis of Road Accidents
+## Employing Black Box Mechanism for Investigation and Analysis of Road Accidents
 
 ## Overview
 This project presents a novel system for accident analysis using advanced sensor technology. The system gathers real-time acceleration, gyroscope, and GPS data to create detailed 3D models of vehicle orientation during accidents. By employing machine learning techniques and data visualization tools, the system enhances post-accident analysis and provides valuable feedback for improving vehicle design and safety.
@@ -27,11 +27,20 @@ This project presents a novel system for accident analysis using advanced sensor
 - **Anomaly Detection**: Identified 581 anomalies with a 94.99% accuracy rate.
 - **Data Visualization**: Comprehensive graphs showing acceleration and gyroscope data.
 
-## Getting Started
-### Prerequisites
-- NodeMCU microcontroller
-- MPU6050 sensor
-- GPS 6MV2 sensor
-- Three.js library
-- Plotly.js library
-- Flask (for web application)
+### Homepage of Flask Application
+![Homepage of Flask Application](images/homepage.png)
+
+### Hardware Connections
+![Hardware Connections](images/hardware.png)
+
+### Viewing 3D Model
+![Viewing 3D Model](images/view-3D-Model.png)
+
+### Anomalies
+![Anomalies](images/anomalies.png)
+
+### PCA Projection of Sensor Readings
+![PCA Projection of Sensor Readings](images/pca.png)
+
+### Tracking Live Location
+![Tracking Live Location](images/tracking.png)
