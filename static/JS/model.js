@@ -5,6 +5,12 @@ $(document).ready(function () {
     let data, car, scene, camera, renderer, controls, axesHelper;
     let anomalies = [];
     let alertTextMeshes = [];
+    let speed = 1; // Car speed in km/h
+    let maxSpeed = 100; // Maximum speed in km/h
+    let acceleration = 0.1; // Acceleration rate
+    let brakeDeceleration = 0.2; // Deceleration rate when braking
+    let groundPlanes = [];
+    let carDirection = new THREE.Vector3(0, 0, 1); // Initial car direction
 
     function fetchData() {
         $.ajax({
@@ -46,26 +52,50 @@ $(document).ready(function () {
         light.position.set(5, 5, 5).normalize();
         scene.add(light);
 
-        var gridHelper = new THREE.GridHelper(100, 100);
-        scene.add(gridHelper);
+        // Add dynamic lighting
+        var ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
+        scene.add(ambientLight);
 
-        // Create and add terrain
-        // var terrainGeometry = new THREE.PlaneGeometry(200, 200, 256, 256);
-        // var terrainMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
+        var directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        scene.add(directionalLight);
 
-        // var terrainMesh = new THREE.Mesh(terrainGeometry, terrainMaterial);
-        // terrainMesh.rotation.x = -Math.PI / 2;
-        // scene.add(terrainMesh);
+        function updateLighting() {
+            let time = new Date().getHours();
+            if (time >= 6 && time <= 18) {
+                directionalLight.intensity = 0.5; // Daytime lighting
+            } else {
+                directionalLight.intensity = 0.1; // Nighttime lighting
+            }
+        }
 
-        // Wireframe cube for reference
-        var geometry = new THREE.BoxGeometry(100, 100, 100);
-        var material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
-        var mesh = new THREE.Mesh(geometry, material);
-        scene.add(mesh);
+        updateLighting();
+        setInterval(updateLighting, 60000); // Update lighting every minute
+
+        // Create multiple ground planes for continuous movement effect
+        createGroundPlanes();
 
         camera.position.z = 50;
 
         window.addEventListener('resize', onWindowResize, false);
+    }
+
+    function createGroundPlanes() {
+        const planeSize = 200;
+        var textureLoader = new THREE.TextureLoader();
+        var groundTexture = textureLoader.load('https://threejs.org/examples/textures/terrain/grasslight-big.jpg');
+        groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
+        groundTexture.repeat.set(4, 4);
+
+        for (let i = 0; i < 3; i++) { // Create 3 ground planes
+            var groundGeometry = new THREE.PlaneGeometry(planeSize, planeSize, 32, 32);
+            var groundMaterial = new THREE.MeshBasicMaterial({ map: groundTexture });
+            var ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -1;
+            ground.position.z = i * planeSize; // Position planes sequentially
+            scene.add(ground);
+            groundPlanes.push(ground);
+        }
     }
 
     function loadCarModel() {
@@ -77,7 +107,7 @@ $(document).ready(function () {
             objLoader.setMaterials(materials);
             objLoader.load('/static/models/NISSAN-GTR.obj', function (object) {
                 car = object;
-                car.scale.set(0.2, 0.2, 0.2);
+                car.scale.set(0.1, 0.1, 0.1);
 
                 // Center the car on the terrain
                 car.position.set(0, 0, 0); // Set initial y position
@@ -126,12 +156,37 @@ $(document).ready(function () {
 
     function animate() {
         if (isAnimating && index < data.Timestamp.length && car) {
-            car.position.set(data.x[index], 0, data.z[index]);
+            // Update car speed based on user input
+            let inputSpeed = parseFloat($('#speed-range').val());
+            if (speed < inputSpeed) {
+                speed += acceleration;
+                if (speed > inputSpeed) speed = inputSpeed;
+            } else if (speed > inputSpeed) {
+                speed -= brakeDeceleration;
+                if (speed < inputSpeed) speed = inputSpeed;
+            }
 
+            // Update speedometer
+            $('#speedometer').text(`Speed: ${Math.round(speed)} km/h`);
+
+            // Calculate new ground position based on speed and yaw angle
+            let yaw = data.yaw[index] * Math.PI / 180;
+            let deltaX = (speed / 3.6) * Math.sin(yaw); // Convert speed from km/h to m/s
+            let deltaZ = (speed / 3.6) * Math.cos(yaw);
+
+            groundPlanes.forEach(ground => {
+                ground.position.x -= deltaX;
+                ground.position.z -= deltaZ;
+
+                // Loop ground planes
+                if (ground.position.z < -200) {
+                    ground.position.z += 600; // Move to the back
+                }
+            });
+
+            // Rotate the car according to pitch and roll
             var roll = data.roll[index] * Math.PI / 180;
             var pitch = data.pitch[index] * Math.PI / 180;
-            var yaw = data.yaw[index] * Math.PI / 180;
-
             car.rotation.set(pitch, yaw, roll);
 
             let currentTimestamp = data.Timestamp[index];
@@ -178,4 +233,8 @@ $(document).ready(function () {
     $('#start-btn').click(startAnimation);
     $('#stop-btn').click(stopAnimation);
     $('#restart-btn').click(restartAnimation);
+
+    $('#speed-range').on('input', function () {
+        // No need to update speed here; it will be managed in the animate function
+    });
 });
